@@ -329,22 +329,24 @@ Template.messageBox.events({
 		const action = this.action || Template.parentData().action;
 		action.apply(this, [{ rid: Template.parentData()._id, messageBox: instance.find('.rc-message-box'), element: event.currentTarget, event }]);
 	},
-	'click .join'(event) {
+
+	/** Events when not subscribed to the room */
+	'click .js-join'(event) {
+		const { rid } = this;
 		event.stopPropagation();
 		event.preventDefault();
-		Meteor.call('joinRoom', this._id, Template.instance().$('[name=joinCode]').val(), (err) => {
+		Meteor.call('joinRoom', rid, Template.instance().$('[name=joinCode]').val(), (err) => {
 			if (err != null) {
 				toastr.error(t(err.reason));
 			}
-			if (RocketChat.authz.hasAllPermission('preview-c-room') === false && RoomHistoryManager.getRoom(this._id).loaded === 0) {
-				RoomManager.getOpenedRoomByRid(this._id).streamActive = false;
-				RoomManager.getOpenedRoomByRid(this._id).ready = false;
-				RoomHistoryManager.getRoom(this._id).loaded = null;
+			if (RocketChat.authz.hasAllPermission('preview-c-room') === false && RoomHistoryManager.getRoom(rid).loaded === 0) {
+				RoomManager.getOpenedRoomByRid(rid).streamActive = false;
+				RoomManager.getOpenedRoomByRid(rid).ready = false;
+				RoomHistoryManager.getRoom(rid).loaded = null;
 				RoomManager.computation.invalidate();
 			}
 		});
 	},
-
 	'click .register'(event) {
 		event.stopPropagation();
 		event.preventDefault();
@@ -359,6 +361,8 @@ Template.messageBox.events({
 			}
 		});
 	},
+	/** Events when not subscribed to the room */
+
 	'focus .js-input-message'(event, instance) {
 		KonchatNotification.removeRoomNotification(this._id);
 		if (chatMessages[this._id]) {
